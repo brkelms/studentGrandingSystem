@@ -104,7 +104,6 @@ input:focus, select:focus {
     background-color: #2563eb;
 }
 
-/* Detaylı Sınav Giriş Kutusu */
 .exam-details-box {
     background-color: #ffffff;
     border: 1px solid #cbd5e1;
@@ -123,7 +122,6 @@ input:focus, select:focus {
     padding-bottom: 8px;
 }
 
-/* Soruların Yan Yana Dizilmesi (Grid) */
 .questions-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -143,7 +141,6 @@ input:focus, select:focus {
     font-size: 0.95rem;
 }
 
-/* Sınav Toplamı Görünümü */
 .exam-total {
     display: flex;
     align-items: center;
@@ -173,17 +170,10 @@ input:focus, select:focus {
     padding: 10px;
 }
 
-/* Mobilde tablonun taşmaması için kaydırma (scroll) özelliği */
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch; 
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    min-width: 700px; /* Mobilde sütunlar çok sıkışmasın diye min genişlik */
 }
 
 th, td {
@@ -205,47 +195,26 @@ td {
     font-size: 0.95rem;
 }
 
+/* --- MASAÜSTÜ RENKLENDİRMELERİ --- */
 .col-question {
     text-align: center;
-    color: #64748b;
+    color: #2563eb; /* Soru puanları Canlı Mavi */
+    font-weight: 700; /* Rakamlar belirginleşti */
     width: 50px;
 }
 
 .col-total {
     background-color: #f8fafc;
     text-align: center;
-    font-size: 1.05rem;
-    color: #0f172a;
+    font-size: 1.1rem;
+    color: #16a34a; /* Toplam puan Canlı Yeşil */
+    font-weight: 800; /* Daha kalın puntolu */
 }
 
 /* Düzenle ve Sil Butonları */
-.btn-edit {
-    background-color: #f59e0b;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: background-color 0.2s;
-}
-
+.btn-edit { background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background-color 0.2s; }
 .btn-edit:hover { background-color: #d97706; }
-
-.btn-delete {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-left: 5px;
-    transition: background-color 0.2s;
-}
-
+.btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-left: 5px; transition: background-color 0.2s; }
 .btn-delete:hover { background-color: #b91c1c; }
 
 /* Filtre ve Dışa Aktarma Düzeni */
@@ -261,210 +230,152 @@ td {
     border: 1px solid #e2e8f0;
 }
 
-.filter-inputs {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-}
-
-.export-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-export {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-}
-
+.filter-inputs { display: flex; gap: 10px; flex: 1; }
+.export-actions { display: flex; gap: 10px; }
+.btn-export { padding: 10px 15px; border: none; border-radius: 5px; color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; white-space: nowrap; }
 .btn-export:hover { opacity: 0.85; }
 .btn-export.excel { background-color: #16a34a; }
 .btn-export.pdf { background-color: #dc2626; }
 
+/* İstatistik Butonu */
+.btn-nav { display: inline-block; background-color: #f59e0b; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
 /* ==============================================================
-   MOBİL VE TABLET UYUMU (RESPONSIVE TASARIM - MEDYA SORGULARI)
+   MOBİL UYUM VE MOBİL RENKLENDİRMELERİ
    ============================================================== */
 
-/* Tabletler ve Küçük Ekranlı Dizüstü Bilgisayarlar (992px ve altı) */
 @media (max-width: 992px) {
     main {
-        grid-template-columns: 1fr; /* Sol form üste, sağ tablo alta geçer */
-        padding: 20px;
-        gap: 20px;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 15px !important;
+        gap: 15px;
     }
-    
-    .filter-section {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .export-actions {
-        justify-content: flex-end;
-    }
+    .filter-section { flex-direction: column; align-items: stretch; }
+    .export-actions { justify-content: flex-end; }
 }
 
-/* Büyük Telefonlar ve Dikey Tabletler (768px ve altı) */
-@media (max-width: 768px) {
-    .filter-inputs {
-        flex-direction: column; /* Arama çubuğu ve Sınıf seçici alt alta gelir */
-    }
-    
-    .export-actions {
-        justify-content: space-between;
-    }
-    
-    .btn-export {
-        flex: 1; /* Excel ve PDF butonları yan yana tüm genişliği kaplar */
-        text-align: center;
-    }
-}
-
-/* Küçük Telefonlar (600px ve altı) */
 @media (max-width: 600px) {
-    body {
-        padding: 10px; /* Telefon ekranında kenar boşluklarını daralt */
-    }
+    body { padding: 5px; }
+    header { padding: 15px; }
+    header h1 { font-size: 1.3rem; }
     
-    header {
-        padding: 15px 20px;
-    }
-    
-    header h1 {
-        font-size: 1.5rem;
-    }
-    
-    main {
-        padding: 15px;
-    }
-    
-    /* TypeScript içindeki inline style'ı ezip mobilde soruları 3'erli dizmek için !important kullanıyoruz */
-    .questions-grid {
-        grid-template-columns: repeat(3, 1fr) !important; 
-    }
-    
-    .exam-total {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-    }
-    
-    .exam-total input {
+    .filter-inputs { flex-direction: column; }
+    .questions-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+    /* TABLOYU SIFIRLA */
+    table, thead, tbody, th, td, tr {
+        display: block;
         width: 100%;
-        margin-top: 5px;
-        text-align: center;
     }
-    
-    .table-responsive {
-        border: 1px solid #e2e8f0;
+    thead { display: none; }
+
+    /* ÖĞRENCİ KARTI DÜZENİ */
+    tr {
+        margin-bottom: 15px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
-        padding-bottom: 5px; 
+        padding: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        display: flex;
+        flex-wrap: wrap; 
+        align-items: center;
+        gap: 5px; 
     }
-    
-    th, td {
-        padding: 10px;
-        font-size: 0.85rem;
+
+    /* Öğrenci Adı */
+    td:nth-child(1) {
+        flex: 1 1 70%;
+        font-size: 1.15rem;
+        font-weight: bold;
+        color: #0f172a;
+        padding: 0 0 5px 0;
+        border: none;
     }
-    
-    /* Düzenle ve Sil butonları mobilde alt alta daha rahat tıklansın diye büyütülür */
-    .btn-edit, .btn-delete {
-        padding: 8px 10px;
-        margin-bottom: 5px;
-        display: block; 
-        width: 100%;
-        margin-left: 0;
+
+    /* Sınıf */
+    td:nth-child(2) {
+        flex: 1 1 20%;
+        text-align: right;
+        font-size: 1.05rem;
+        font-weight: bold;
+        color: #64748b; /* Sınıf rengini gri ton yaptık ki notlar öne çıksın */
+        padding: 0 0 5px 0;
+        border: none;
+    }
+
+    /* --- MOBİL Soru Kutucukları Renklendirmesi --- */
+    .col-question {
+        flex: 1 1 14%; 
+        min-width: 35px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 5px 2px;
         text-align: center;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        
+        font-size: 1.05rem; /* Rakam biraz büyüdü */
+        font-weight: 700;
+        color: #2563eb; /* Soru Puanı Rengi: Canlı Mavi */
     }
-}
-/* ==============================================================
-   İSTATİSTİK SAYFASI VE NAVİGASYON STİLLERİ
-   ============================================================== */
 
-   .btn-nav {
-    display: inline-block;
-    background-color: #f59e0b; /* Turuncu ton */
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
-}
+    /* Kutucuğun içindeki "S1, S2" etiketleri (Rengi soluk gri kalıyor) */
+    .col-question::before {
+        content: attr(data-label);
+        font-size: 0.65rem;
+        color: #94a3b8; 
+        font-weight: normal;
+        margin-bottom: 2px;
+    }
 
-.btn-nav:hover {
-    background-color: #d97706;
-}
+    td.cell-s6[style*="display: none"] {
+        display: none !important;
+    }
 
-.stats-main {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    padding: 30px;
-}
+    /* --- MOBİL Toplam Puan Satırı Renklendirmesi --- */
+    .col-total {
+        flex: 1 1 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f1f5f9;
+        border-radius: 5px;
+        padding: 8px 10px;
+        margin-top: 5px;
+        border: none;
 
-/* Özet Kartları */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
+        font-size: 1.25rem; /* Toplam puan iyice belirgin */
+        font-weight: 800;
+        color: #16a34a; /* Toplam Puan Rengi: Canlı Yeşil */
+    }
 
-.card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    text-align: center;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
+    /* "Toplam Puan:" yazısı (Soluk gri kalıyor) */
+    .col-total::before {
+        content: "Toplam Puan:";
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #475569; 
+    }
 
-.card h3 {
-    font-size: 1rem;
-    color: #64748b;
-    margin-bottom: 10px;
-    border-bottom: none;
-    padding-bottom: 0;
-}
+    /* İşlemler Butonları */
+    td:last-child {
+        flex: 1 1 100%;
+        display: flex;
+        gap: 10px;
+        padding: 8px 0 0 0;
+        border: none;
+    }
+    td:last-child::before { display: none; } 
 
-.card-value {
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: #0f172a;
-}
-
-/* Grafikler */
-.charts-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr; /* Çubuk grafik daha geniş, pasta grafik daha dar */
-    gap: 20px;
-}
-
-.chart-container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.chart-container h3 {
-    font-size: 1.1rem;
-    text-align: center;
-    margin-bottom: 15px;
-    color: #1e293b;
-    border-bottom: none;
-}
-
-/* İstatistik Mobilde Alt Alta Gelsin */
-@media (max-width: 992px) {
-    .charts-grid {
-        grid-template-columns: 1fr;
+    .btn-edit, .btn-delete {
+        flex: 1;
+        padding: 10px;
+        font-size: 0.9rem;
+        margin: 0;
     }
 }

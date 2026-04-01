@@ -13,7 +13,6 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// DOM Elemanları (Form ve Tablo)
 const form = document.getElementById('gradeForm');
 const studentNameInput = document.getElementById('studentName');
 const studentClassSelect = document.getElementById('studentClass');
@@ -21,21 +20,17 @@ const examTotalInput = document.getElementById('exam1Total');
 const gradesTableBody = document.querySelector('#gradesTable tbody');
 const questionsGrid = document.getElementById('questionsGrid');
 const submitBtn = form.querySelector('.btn-submit');
-// DOM Elemanları (Filtreleme ve Dışa Aktarma)
 const searchNameInput = document.getElementById('searchName');
 const filterClassSelect = document.getElementById('filterClass');
 const btnExportExcel = document.getElementById('btnExportExcel');
 const btnExportPDF = document.getElementById('btnExportPDF');
-// Düzenleme modu takibi
 let currentEditId = null;
-// Soru inputlarını diziye alma
 const questionInputs = [];
 for (let i = 1; i <= 6; i++) {
     const input = document.getElementById(`q${i}`);
     if (input)
         questionInputs.push(input);
 }
-// Toplam Hesaplama
 function calculateTotal() {
     let totalScore = 0;
     const is6th = studentClassSelect.value.startsWith('6');
@@ -51,7 +46,6 @@ function calculateTotal() {
 questionInputs.forEach(input => {
     input.addEventListener('input', calculateTotal);
 });
-// FORM: Sınıf Değişimi (Sadece formdaki S6 inputunu göster/gizle)
 studentClassSelect.addEventListener('change', () => {
     const is6th = studentClassSelect.value.startsWith('6');
     const q6Container = document.getElementById('q6-container');
@@ -67,7 +61,6 @@ studentClassSelect.addEventListener('change', () => {
     }
     calculateTotal();
 });
-// FORMU GÖNDERME (Kaydet / Güncelle)
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.textContent = currentEditId ? "Güncelleniyor..." : "Buluta Kaydediliyor...";
@@ -110,26 +103,29 @@ form.addEventListener('submit', async (e) => {
         submitBtn.textContent = currentEditId ? "Kaydı Güncelle" : "Sisteme Kaydet";
     }
 });
-// TABLOYA SATIR EKLEME
+// --- YENİLİK BURADA: MOBİL UYUMLU KISALTILMIŞ ETİKETLER ---
 function addRecordToTable(record) {
     const tr = document.createElement('tr');
     const isFilter5th = filterClassSelect.value.startsWith('5');
-    const s6DisplayStyle = isFilter5th ? 'none' : 'table-cell';
+    const s6DisplayStyle = isFilter5th ? 'none' : 'block';
+    if (window.innerWidth > 600) {
+        tr.style.display = 'table-row';
+    }
     const isRecord6th = record.sinif && record.sinif.startsWith('6');
     const s6Value = (isRecord6th && record.s6 !== undefined) ? record.s6 : '-';
+    // Soru yazıları S1, S2 olarak kısaltıldı ki mobildeki küçük kutucuklara sığsın
     tr.innerHTML = `
-        <td>${record.adSoyad}</td>
-        <td>${record.sinif}</td>
-        <td class="col-question">${record.s1}</td>
-        <td class="col-question">${record.s2}</td>
-        <td class="col-question">${record.s3}</td>
-        <td class="col-question">${record.s4}</td>
-        <td class="col-question">${record.s5}</td>
-        <td class="col-question cell-s6" style="display: ${s6DisplayStyle};">${s6Value}</td>
-        <td class="col-total"><strong>${record.toplam}</strong></td>
+        <td data-label="Öğrenci">${record.adSoyad}</td>
+        <td data-label="Sınıf">${record.sinif}</td>
+        <td class="col-question" data-label="S1">${record.s1}</td>
+        <td class="col-question" data-label="S2">${record.s2}</td>
+        <td class="col-question" data-label="S3">${record.s3}</td>
+        <td class="col-question" data-label="S4">${record.s4}</td>
+        <td class="col-question" data-label="S5">${record.s5}</td>
+        <td class="col-question cell-s6" data-label="S6" style="display: ${isFilter5th && window.innerWidth <= 600 ? 'none' : ''};">${s6Value}</td>
+        <td class="col-total" data-label="Sınav Puanı"><strong>${record.toplam}</strong></td>
     `;
     const actionTd = document.createElement('td');
-    // --- DÜZENLE BUTONU ---
     const editBtn = document.createElement('button');
     editBtn.textContent = 'Düzenle';
     editBtn.className = 'btn-edit';
@@ -151,7 +147,6 @@ function addRecordToTable(record) {
         submitBtn.style.backgroundColor = "#f59e0b";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    // --- SİL BUTONU ---
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Sil';
     deleteBtn.className = 'btn-delete';
@@ -181,7 +176,6 @@ function addRecordToTable(record) {
     tr.appendChild(actionTd);
     gradesTableBody.appendChild(tr);
 }
-// FİLTRELEME VE TABLO SÜTUN YÖNETİMİ
 function filterTable() {
     const searchTerm = searchNameInput.value.toLowerCase();
     const selectedFilter = filterClassSelect.value;
@@ -204,17 +198,19 @@ function filterTable() {
     const thS6 = document.getElementById('th-s6');
     const s6Cells = document.querySelectorAll('.cell-s6');
     if (selectedFilter.startsWith('5')) {
-        thS6.style.display = 'none';
+        if (thS6)
+            thS6.style.display = 'none';
         s6Cells.forEach(cell => cell.style.display = 'none');
     }
     else {
-        thS6.style.display = 'table-cell';
-        s6Cells.forEach(cell => cell.style.display = 'table-cell');
+        if (thS6)
+            thS6.style.display = window.innerWidth > 600 ? 'table-cell' : 'block';
+        s6Cells.forEach(cell => cell.style.display = window.innerWidth > 600 ? 'table-cell' : 'block');
     }
 }
 searchNameInput.addEventListener('input', filterTable);
 filterClassSelect.addEventListener('change', filterTable);
-// VERİLERİ BULUTTAN ÇEKME
+window.addEventListener('resize', filterTable);
 async function loadGradesFromCloud() {
     try {
         gradesTableBody.innerHTML = '';
@@ -234,22 +230,17 @@ async function loadGradesFromCloud() {
         console.error("Veriler çekilirken hata oluştu: ", error);
     }
 }
-// --- DIŞA AKTARMA (EXCEL VE PDF) YARDIMCI FONKSİYONU ---
 function getVisibleTableDataForExport() {
     const data = [];
     const is6thVisible = document.getElementById('th-s6')?.style.display !== 'none';
-    // Başlıkları oluştur (İşlemler sütunu hariç)
     const headers = ["Öğrenci", "Sınıf", "S1", "S2", "S3", "S4", "S5"];
     if (is6thVisible)
         headers.push("S6");
     headers.push("Toplam Puan");
     data.push(headers);
-    // Filtrelenmiş satırları oku
     const rows = gradesTableBody.querySelectorAll('tr');
     rows.forEach(row => {
         if (row.style.display !== 'none') {
-            // ÇÖZÜM BURADA: Dizinin tipini açıkça belirttik (string[]) 
-            // ve null hatalarını önlemek için || '' ekledik.
             const rowData = [];
             rowData.push(row.cells[0].textContent || '');
             rowData.push(row.cells[1].textContent || '');
@@ -267,7 +258,6 @@ function getVisibleTableDataForExport() {
     });
     return data;
 }
-// EXCEL İNDİRME İŞLEMİ
 btnExportExcel.addEventListener('click', () => {
     const data = getVisibleTableDataForExport();
     const worksheet = XLSX.utils.aoa_to_sheet(data);
@@ -276,16 +266,13 @@ btnExportExcel.addEventListener('click', () => {
     const fileName = `Ogrenci_Notlari_${filterClassSelect.value}.xlsx`;
     XLSX.writeFile(workbook, fileName);
 });
-// PDF İNDİRME İŞLEMİ (Türkçe Karakter Destekli)
 btnExportPDF.addEventListener('click', async () => {
-    // Kullanıcıya işlemin başladığını göster
     const originalText = btnExportPDF.textContent;
     btnExportPDF.textContent = "PDF Hazırlanıyor...";
     btnExportPDF.disabled = true;
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        // 1. Türkçe destekli Roboto fontunu CDN üzerinden indir ve Base64'e çevir
         const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
         const res = await fetch(fontUrl);
         const blob = await res.blob();
@@ -294,33 +281,24 @@ btnExportPDF.addEventListener('click', async () => {
             reader.onloadend = () => resolve(reader.result.split(',')[1]);
             reader.readAsDataURL(blob);
         });
-        // 2. Fontu jsPDF'e özel bir font olarak kaydet ve aktif et
         doc.addFileToVFS("Roboto-Regular.ttf", base64Font);
         doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
         doc.setFont("Roboto");
-        // 3. Tablo verilerini hazırla
         const data = getVisibleTableDataForExport();
         const headers = data[0];
         const body = data.slice(1);
-        // Başlıkları ekle (Artık Türkçe karakter kullanabiliriz)
         doc.setFontSize(16);
         doc.text("Öğrenci Not Listesi", 14, 15);
         doc.setFontSize(10);
         doc.text(`Filtre: ${filterClassSelect.options[filterClassSelect.selectedIndex].text}`, 14, 22);
-        // 4. Tabloyu PDF'e çiz (autoTable eklentisine de yeni fontu kullanmasını söylüyoruz)
         doc.autoTable({
             head: [headers],
             body: body,
             startY: 26,
             theme: 'grid',
-            styles: {
-                font: "Roboto", // CRITICAL: Tablonun da bu fontu kullanması şart
-                fontSize: 9,
-                cellPadding: 2
-            },
+            styles: { font: "Roboto", fontSize: 9, cellPadding: 2 },
             headStyles: { fillColor: [30, 41, 59] }
         });
-        // 5. Dosyayı indir
         const fileName = `Ogrenci_Notlari_${filterClassSelect.value}.pdf`;
         doc.save(fileName);
     }
@@ -329,10 +307,8 @@ btnExportPDF.addEventListener('click', async () => {
         alert("PDF oluşturulurken bir hata oluştu. İnternet bağlantınızı kontrol edin.");
     }
     finally {
-        // İşlem bitince butonu eski haline getir
         btnExportPDF.textContent = originalText;
         btnExportPDF.disabled = false;
     }
 });
-// Uygulama Başlangıcı
 loadGradesFromCloud();
