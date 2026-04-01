@@ -74,6 +74,7 @@ studentClassSelect.addEventListener('change', () => {
     calculateTotal();
 });
 
+// FORMU GÖNDERME (Kaydet / Güncelle)
 form.addEventListener('submit', async (e: Event) => {
     e.preventDefault(); 
 
@@ -102,7 +103,6 @@ form.addEventListener('submit', async (e: Event) => {
             const docRef = doc(db, "ogrenci_notlari", currentEditId);
             await updateDoc(docRef, recordToSave);
             currentEditId = null; 
-            submitBtn.textContent = "Sisteme Kaydet";
             submitBtn.style.backgroundColor = "#3b82f6"; 
         } else {
             recordToSave.kayitTarihi = serverTimestamp();
@@ -115,9 +115,16 @@ form.addEventListener('submit', async (e: Event) => {
         
         await loadGradesFromCloud();
 
+        // ---> EKSİK OLAN VE EKLENEN KISIM BURASI <---
+        // İşlem başarıyla bitince butonu eski haline getir ve kilidini aç
+        submitBtn.textContent = "Sisteme Kaydet";
+        submitBtn.disabled = false;
+
     } catch (error) {
         console.error("Firestore Hatası: ", error);
         alert("Bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
+        
+        // Hata durumunda da kilidi aç ki kullanıcı tekrar deneyebilsin
         submitBtn.disabled = false;
         submitBtn.textContent = currentEditId ? "Kaydı Güncelle" : "Sisteme Kaydet";
     }

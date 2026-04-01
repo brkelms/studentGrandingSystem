@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>İstatistikler | Öğrenci Not Kayıt Sistemi</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -19,9 +20,9 @@
         </header>
 
         <main class="stats-main">
-            <div class="filter-section" style="justify-content: center; background-color: #e2e8f0;">
-                <div class="filter-inputs" style="max-width: 600px; width: 100%; display: flex; gap: 10px; align-items: center;">
-                    <select id="statsFilter" style="flex: 1; font-weight: bold; font-size: 1.1rem; text-align: center; cursor: pointer;">
+            <div class="minimal-filter-container">
+                <div class="minimal-filter-group">
+                    <select id="statsFilter" class="minimal-select">
                         <option value="5-all">5. Sınıflar (Tüm Kademe)</option>
                         <option value="6-all">6. Sınıflar (Tüm Kademe)</option>
                         <optgroup label="5. Sınıf Şubeleri">
@@ -39,12 +40,32 @@
                             <option value="6-E">6/E Sınıfı Analizi</option>
                         </optgroup>
                     </select>
-                    <button id="btnExportStatsPDF" class="btn-export pdf" style="white-space: nowrap;">PDF İndir</button>
+                    
+                    <button id="btnExportStatsPDF" class="btn-minimal-pdf">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Rapor
+                    </button>
                 </div>
             </div>
 
             <div id="dynamicStatsContainer" class="summary-cards">
                 </div>
+
+            <div id="chartsWrapper" class="charts-grid">
+                <div class="chart-container">
+                    <h3 id="barChartTitle">Karşılaştırma Grafiği</h3>
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 id="pieChartTitle">Baraj Durumu</h3>
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
         </main>
     </div>
 

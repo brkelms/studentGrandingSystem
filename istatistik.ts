@@ -3,8 +3,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 // @ts-ignore
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// PDF Kütüphanesi için global tanımlama
 declare const window: any;
+declare const Chart: any;
 
 // !!! KENDI FIREBASE BILGILERINI BURAYA YAPIŞTIR !!!
 const firebaseConfig = {
@@ -20,36 +20,52 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let allStudents: any[] = [];
+let barChartInstance: any = null;
+let pieChartInstance: any = null;
 
-// DOM Elemanları
 const statsFilter = document.getElementById('statsFilter') as HTMLSelectElement;
 const dynamicStatsContainer = document.getElementById('dynamicStatsContainer') as HTMLElement;
 const btnExportStatsPDF = document.getElementById('btnExportStatsPDF') as HTMLButtonElement;
+const chartsWrapper = document.getElementById('chartsWrapper') as HTMLElement;
+const barChartTitle = document.getElementById('barChartTitle') as HTMLElement;
+const pieChartTitle = document.getElementById('pieChartTitle') as HTMLElement;
 
-// 1. Veritabanından Verileri Çek
 async function loadDataAndInit() {
     try {
         dynamicStatsContainer.innerHTML = '<h3>Veriler hesaplanıyor...</h3>';
+        chartsWrapper.style.visibility = 'hidden'; 
+
         const querySnapshot = await getDocs(collection(db, "ogrenci_notlari"));
         querySnapshot.forEach((doc: any) => allStudents.push(doc.data()));
-        
         updateStatistics();
-
     } catch (error) {
         console.error("Veriler çekilirken hata:", error);
-        dynamicStatsContainer.innerHTML = '<div class="card"><h3 style="color:red;">Veriler yüklenemedi. Bağlantınızı kontrol edin.</h3></div>';
+        dynamicStatsContainer.innerHTML = '<div class="card"><h3 style="color:red;">Veriler yüklenemedi.</h3></div>';
     }
 }
 
 statsFilter.addEventListener('change', updateStatistics);
 
-// 2. Seçime Göre Yönlendirme
+function renderCharts(mainChartConfig: any, pieConfig: any) {
+    const ctxBar = document.getElementById('barChart') as HTMLCanvasElement;
+    const ctxPie = document.getElementById('pieChart') as HTMLCanvasElement;
+
+    if (barChartInstance) barChartInstance.destroy();
+    if (pieChartInstance) pieChartInstance.destroy();
+
+    barChartInstance = new Chart(ctxBar, mainChartConfig);
+    pieChartInstance = new Chart(ctxPie, pieConfig);
+    
+    chartsWrapper.style.visibility = 'visible';
+}
+
 function updateStatistics() {
     const selected = statsFilter.value; 
     dynamicStatsContainer.innerHTML = ''; 
 
     if (allStudents.length === 0) {
         dynamicStatsContainer.innerHTML = '<div class="card"><h3>Kayıtlı öğrenci bulunmuyor.</h3></div>';
+        chartsWrapper.style.visibility = 'hidden';
         return;
     }
 
@@ -60,21 +76,27 @@ function updateStatistics() {
     }
 }
 
-// 3. KADEME İSTATİSTİKLERİ
+// =========================================================
+// KADEME BAZLI İSTATİSTİKLER 
+// =========================================================
 function renderGradeLevelStats(gradeLevel: string) {
     const gradePrefix = gradeLevel.split('-')[0];
     const filteredStudents = allStudents.filter(s => s.sinif && s.sinif.startsWith(gradePrefix));
 
     if (filteredStudents.length === 0) {
         dynamicStatsContainer.innerHTML = `<div class="card"><h3>Bu kademede henüz kayıt yok.</h3></div>`;
+        chartsWrapper.style.visibility = 'hidden';
         return;
     }
 
     const scores = filteredStudents.map(s => s.toplam);
-    const maxScore = Math.max(...scores);
-    const minScore = Math.min(...scores);
-    const maxCount = scores.filter(s => s === maxScore).length;
-    const minCount = scores.filter(s => s === minScore).length;
+    const gradeAvg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    
+    const pass50 = scores.filter(s => s >= 50).length;
+    const fail50 = scores.filter(s => s < 50).length;
+    const count100 = scores.filter(s => s === 100).length;
+    const aboveAvg = scores.filter(s => s >= gradeAvg).length;
+    const belowAvg = scores.filter(s => s < gradeAvg).length;
 
     const branchStats: any = {};
     filteredStudents.forEach(s => {
@@ -83,72 +105,163 @@ function renderGradeLevelStats(gradeLevel: string) {
         branchStats[s.sinif].count++;
     });
 
-    let bestBranch = "-";
-    let bestAvg = -1;
-    let worstBranch = "-";
-    let worstAvg = 101; 
+    createCard("Kademe Ortalaması", `${gradeAvg.toFixed(1)}`, `Toplam ${filteredStudents.length} Öğrenci`);
+    createCard("50 Puan Barajı", `${pass50} Geçti`, `${fail50} Öğrenci barajın altında kaldı`);
+    createCard("Ortalama Barajı", `${aboveAvg} Üstünde`, `${belowAvg} Öğrenci ortalamanın altında`);
+    createCard("100 Tam Puan", `${count100}`, `Kişi tam puan aldı`);
 
-    for (const [branch, data] of Object.entries(branchStats)) {
-        const avg = (data as any).total / (data as any).count;
-        if (avg > bestAvg) { bestAvg = avg; bestBranch = branch; }
-        if (avg < worstAvg) { worstAvg = avg; worstBranch = branch; }
+    const sortedBranches = Object.keys(branchStats).sort();
+    const branchAverages: string[] = [];
+
+    for (const branch of sortedBranches) {
+        const avg = branchStats[branch].total / branchStats[branch].count;
+        branchAverages.push(avg.toFixed(1));
+        createCard(`${branch} Ortalaması`, `${avg.toFixed(1)}`, `${branchStats[branch].count} Öğrenci`);
     }
 
-    createCard("En Başarılı Sınıf", bestBranch, `(Ortalama: ${bestAvg.toFixed(1)})`);
-    createCard("En Başarısız Sınıf", worstBranch, `(Ortalama: ${worstAvg.toFixed(1)})`);
-    createCard("En Yüksek Puan", `${maxScore}`, `Bu puanı alan: ${maxCount} Öğrenci`);
-    createCard("En Düşük Puan", `${minScore}`, `Bu puanı alan: ${minCount} Öğrenci`);
+    barChartTitle.textContent = "Şube Ortalamaları Karşılaştırması";
+    pieChartTitle.textContent = "50 Puan Barajı Dağılımı";
+
+    const barConfig = {
+        type: 'bar',
+        data: {
+            labels: sortedBranches,
+            datasets: [{ label: 'Şube Puan Ortalaması', data: branchAverages, backgroundColor: '#3b82f6', borderRadius: 5 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+    };
+
+    const pieConfig = {
+        type: 'doughnut',
+        data: {
+            labels: ['50 ve Üzeri (Geçti)', '50 Altı (Kaldı)'],
+            datasets: [{ data: [pass50, fail50], backgroundColor: ['#10b981', '#ef4444'] }]
+        },
+        options: { responsive: true }
+    };
+
+    renderCharts(barConfig, pieConfig);
 }
 
-// 4. ŞUBE İSTATİSTİKLERİ
+// =========================================================
+// SINIF BAZLI İSTATİSTİKLER VE YENİ 0 PUAN (SIFIR) ANALİZİ
+// =========================================================
 function renderClassStats(className: string) {
     const filteredStudents = allStudents.filter(s => s.sinif === className);
 
     if (filteredStudents.length === 0) {
         dynamicStatsContainer.innerHTML = `<div class="card"><h3>Bu şubede henüz kayıt yok.</h3></div>`;
+        chartsWrapper.style.visibility = 'hidden';
         return;
     }
 
     const scores = filteredStudents.map(s => s.toplam);
-    const avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
     
     const maxScore = Math.max(...scores);
     const minScore = Math.min(...scores);
-    const maxCount = scores.filter(s => s === maxScore).length;
-    const minCount = scores.filter(s => s === minScore).length;
+    const pass50 = scores.filter(s => s >= 50).length;
+    const fail50 = scores.filter(s => s < 50).length;
+    const count100 = scores.filter(s => s === 100).length;
+    const aboveAvg = scores.filter(s => s >= avgScore).length;
+    const belowAvg = scores.filter(s => s < avgScore).length;
+
+    const lowestStudent = filteredStudents.find(s => s.toplam === minScore);
 
     const is6th = className.startsWith('6');
     const questionCount = is6th ? 6 : 5;
-    const qStats: any = { s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, s6: 0 };
+    
+    // --- YENİ MANTIK: HER SORU İÇİN 0 (SIFIR) ALAN ÖĞRENCİ SAYISINI BUL ---
+    const zeroCounts: any = { s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, s6: 0 };
 
     filteredStudents.forEach(s => {
-        qStats.s1 += s.s1 || 0;
-        qStats.s2 += s.s2 || 0;
-        qStats.s3 += s.s3 || 0;
-        qStats.s4 += s.s4 || 0;
-        qStats.s5 += s.s5 || 0;
-        if (is6th) qStats.s6 += s.s6 || 0;
+        if (s.s1 === 0) zeroCounts.s1++;
+        if (s.s2 === 0) zeroCounts.s2++;
+        if (s.s3 === 0) zeroCounts.s3++;
+        if (s.s4 === 0) zeroCounts.s4++;
+        if (s.s5 === 0) zeroCounts.s5++;
+        if (is6th && s.s6 === 0) zeroCounts.s6++;
     });
 
     let bestQ = "-";
-    let bestQAvg = -1;
+    let minZeros = 99999; // En az 0 alan soruyu bulmak için yüksek başlatıyoruz
     let worstQ = "-";
-    let worstQAvg = 101;
+    let maxZeros = -1;    // En çok 0 alan soruyu bulmak için düşük başlatıyoruz
 
     for (let i = 1; i <= questionCount; i++) {
-        const avg = qStats[`s${i}`] / filteredStudents.length;
-        if (avg > bestQAvg) { bestQAvg = avg; bestQ = `Soru ${i}`; }
-        if (avg < worstQAvg) { worstQAvg = avg; worstQ = `Soru ${i}`; }
+        const zeros = zeroCounts[`s${i}`];
+        
+        // En Çok Yapılan = En az 0 alınan soru
+        if (zeros < minZeros) { minZeros = zeros; bestQ = `Soru ${i}`; }
+        // En Az Yapılan = En çok 0 alınan soru
+        if (zeros > maxZeros) { maxZeros = zeros; worstQ = `Soru ${i}`; }
     }
 
-    createCard("Sınıf Ortalaması", `${avgScore}`, `Toplam ${filteredStudents.length} Öğrenci`);
-    createCard("En Yüksek Puan", `${maxScore}`, `Bu puanı alan: ${maxCount} Öğrenci`);
-    createCard("En Düşük Puan", `${minScore}`, `Bu puanı alan: ${minCount} Öğrenci`);
-    createCard("En Çok Yapılan", `${bestQ}`, `Soru Ortalaması: ${bestQAvg.toFixed(1)} Puan`);
-    createCard("En Az Yapılan", `${worstQ}`, `Soru Ortalaması: ${worstQAvg.toFixed(1)} Puan`);
+    // Kartları Çiz
+    createCard("Sınıf Ortalaması", `${avgScore.toFixed(1)}`, `Toplam ${filteredStudents.length} Öğrenci`);
+    createCard("50 Puan Barajı", `${pass50} Geçti`, `${fail50} Öğrenci barajın altında kaldı`);
+    createCard("Ortalama Barajı", `${aboveAvg} Üstünde`, `${belowAvg} Öğrenci ortalamanın altında`);
+    createCard("100 Tam Puan", `${count100}`, `Öğrenci 100 tam puan aldı`);
+    createCard("En Düşük Not", `${minScore}`, `Alan: ${lowestStudent?.adSoyad || 'Bilinmiyor'}`);
+    
+    // YENİ KARTLAR (Sıfır Analizi)
+    createCard("En Çok Yapılan", `${bestQ}`, `0 Alan: Sadece ${minZeros} Öğrenci`);
+    createCard("En Az Yapılan", `${worstQ}`, `0 Alan: Tam ${maxZeros} Öğrenci`);
+
+    // --- FREKANS (YIĞILMA) GRAFİĞİ ---
+    barChartTitle.textContent = "Sınıf Puan Yığılma Eğrisi";
+    pieChartTitle.textContent = "Sınıf İçi 50 Puan Barajı";
+
+    const scoreFrequency: { [key: number]: number } = {};
+    filteredStudents.forEach(s => {
+        const score = s.toplam;
+        scoreFrequency[score] = (scoreFrequency[score] || 0) + 1;
+    });
+
+    const sortedUniqueScores = Object.keys(scoreFrequency).map(Number).sort((a, b) => a - b);
+    const frequencies = sortedUniqueScores.map(score => scoreFrequency[score]);
+    const scoreLabels = sortedUniqueScores.map(score => score + " Puan");
+
+    const lineConfig = {
+        type: 'line',
+        data: {
+            labels: scoreLabels,
+            datasets: [{ 
+                label: 'Öğrenci Sayısı', 
+                data: frequencies, 
+                borderColor: '#8b5cf6', 
+                backgroundColor: 'rgba(139, 92, 246, 0.2)', 
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4, 
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#ffffff',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: { 
+            responsive: true, 
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(context: any) { return context.raw + ' Öğrenci bu puanı aldı'; } } }
+            }
+        } 
+    };
+
+    const pieConfig = {
+        type: 'doughnut',
+        data: {
+            labels: ['50 ve Üzeri (Geçti)', '50 Altı (Kaldı)'],
+            datasets: [{ data: [pass50, fail50], backgroundColor: ['#10b981', '#ef4444'] }]
+        },
+        options: { responsive: true }
+    };
+
+    renderCharts(lineConfig, pieConfig);
 }
 
-// 5. KART OLUŞTURUCU
 function createCard(title: string, value: string, subtitle: string) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -160,17 +273,16 @@ function createCard(title: string, value: string, subtitle: string) {
     dynamicStatsContainer.appendChild(card);
 }
 
-// 6. PDF İNDİRME İŞLEMİ (TÜRKÇE KARAKTER DESTEKLİ)
+// PDF İNDİRME İŞLEMİ
 btnExportStatsPDF.addEventListener('click', async () => {
     const originalText = btnExportStatsPDF.textContent;
-    btnExportStatsPDF.textContent = "PDF Hazırlanıyor...";
+    btnExportStatsPDF.innerHTML = "Hazırlanıyor...";
     btnExportStatsPDF.disabled = true;
 
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Türkçe karakter için Roboto fontunu indir ve ekle
         const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
         const res = await fetch(fontUrl);
         const blob = await res.blob();
@@ -185,7 +297,6 @@ btnExportStatsPDF.addEventListener('click', async () => {
         doc.addFont("Roboto-Regular.ttf", "Roboto", "normal");
         doc.setFont("Roboto");
 
-        // Ekrandaki kartları diziye çevir
         const cards = document.querySelectorAll('#dynamicStatsContainer .card');
         const tableData: string[][] = [];
         
@@ -201,14 +312,12 @@ btnExportStatsPDF.addEventListener('click', async () => {
             return;
         }
 
-        // Başlıklar
         doc.setFontSize(16);
         doc.text("Sistem İstatistikleri Raporu", 14, 15);
         doc.setFontSize(10);
         const selectedText = statsFilter.options[statsFilter.selectedIndex].text;
         doc.text(`Analiz Kapsamı: ${selectedText}`, 14, 22);
 
-        // Tabloyu Çiz
         (doc as any).autoTable({
             head: [['Analiz Kriteri', 'Değer', 'Detaylar']],
             body: tableData,
@@ -218,12 +327,11 @@ btnExportStatsPDF.addEventListener('click', async () => {
             headStyles: { fillColor: [30, 41, 59] },
             columnStyles: {
                 0: { cellWidth: 50, fontStyle: 'bold' },
-                1: { cellWidth: 30, halign: 'center', textColor: [59, 130, 246], fontStyle: 'bold' },
+                1: { cellWidth: 35, halign: 'center', textColor: [59, 130, 246], fontStyle: 'bold' },
                 2: { cellWidth: 'auto', textColor: [100, 116, 139] }
             }
         });
 
-        // Dosyayı İndir
         const fileName = `Analiz_${statsFilter.value}.pdf`;
         doc.save(fileName);
 
@@ -231,10 +339,16 @@ btnExportStatsPDF.addEventListener('click', async () => {
         console.error("PDF oluşturulurken hata:", error);
         alert("PDF oluşturulurken bir hata oluştu.");
     } finally {
-        btnExportStatsPDF.textContent = originalText;
+        btnExportStatsPDF.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Rapor
+        `;
         btnExportStatsPDF.disabled = false;
     }
 });
 
-// Uygulamayı Başlat
 loadDataAndInit();
