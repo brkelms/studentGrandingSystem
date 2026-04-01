@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstatistikler | Öğrenci Not Kayıt Sistemi</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem İstatistikleri</h1>
+            <p>Kademe ve Şube Bazlı Detaylı Başarı Analizleri</p>
+            <div style="margin-top: 15px;">
+                <a href="index.html" class="btn-nav">Ana Sayfaya Dön</a>
+            </div>
+        </header>
+
+        <main class="stats-main">
+            <div class="filter-section" style="justify-content: center; background-color: #e2e8f0;">
+                <div class="filter-inputs" style="max-width: 600px; width: 100%; display: flex; gap: 10px; align-items: center;">
+                    <select id="statsFilter" style="flex: 1; font-weight: bold; font-size: 1.1rem; text-align: center; cursor: pointer;">
+                        <option value="5-all">5. Sınıflar (Tüm Kademe)</option>
+                        <option value="6-all">6. Sınıflar (Tüm Kademe)</option>
+                        <optgroup label="5. Sınıf Şubeleri">
+                            <option value="5-A">5/A Sınıfı Analizi</option>
+                            <option value="5-B">5/B Sınıfı Analizi</option>
+                            <option value="5-C">5/C Sınıfı Analizi</option>
+                            <option value="5-D">5/D Sınıfı Analizi</option>
+                            <option value="5-E">5/E Sınıfı Analizi</option>
+                        </optgroup>
+                        <optgroup label="6. Sınıf Şubeleri">
+                            <option value="6-A">6/A Sınıfı Analizi</option>
+                            <option value="6-B">6/B Sınıfı Analizi</option>
+                            <option value="6-C">6/C Sınıfı Analizi</option>
+                            <option value="6-D">6/D Sınıfı Analizi</option>
+                            <option value="6-E">6/E Sınıfı Analizi</option>
+                        </optgroup>
+                    </select>
+                    <button id="btnExportStatsPDF" class="btn-export pdf" style="white-space: nowrap;">PDF İndir</button>
+                </div>
+            </div>
+
+            <div id="dynamicStatsContainer" class="summary-cards">
+                </div>
+        </main>
+    </div>
+
+    <script type="module" src="istatistik.js"></script>
+</body>
+</html>

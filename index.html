@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Not Kayıt Sistemi</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Not Kayıt Yönetimi</h1>
+            <p>Öğrenci sınav ve soru detaylarını sisteme girin</p>
+            <div style="margin-top: 15px;">
+                <a href="istatistik.html" class="btn-nav">İstatistikleri Gör</a>
+            </div>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>Yeni Not Ekle / Düzenle</h2>
+                <form id="gradeForm">
+                    <div class="form-group">
+                        <label for="studentName">Öğrenci Adı Soyadı</label>
+                        <input type="text" id="studentName" placeholder="Örn: Ayşe Yılmaz" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="studentClass">Sınıf / Şube</label>
+                        <select id="studentClass" required>
+                            <option value="">Seçiniz...</option>
+                            <optgroup label="5. Sınıflar">
+                                <option value="5-A">5/A</option>
+                                <option value="5-B">5/B</option>
+                                <option value="5-C">5/C</option>
+                                <option value="5-D">5/D</option>
+                                <option value="5-E">5/E</option>
+                            </optgroup>
+                            <optgroup label="6. Sınıflar">
+                                <option value="6-A">6/A</option>
+                                <option value="6-B">6/B</option>
+                                <option value="6-C">6/C</option>
+                                <option value="6-D">6/D</option>
+                                <option value="6-E">6/E</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="exam-details-box">
+                        <label class="section-label">Sınav Soru Puanları</label>
+                        <div class="questions-grid" id="questionsGrid">
+                            <div class="question-input">
+                                <label for="q1">S1</label>
+                                <input type="number" id="q1" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="question-input">
+                                <label for="q2">S2</label>
+                                <input type="number" id="q2" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="question-input">
+                                <label for="q3">S3</label>
+                                <input type="number" id="q3" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="question-input">
+                                <label for="q4">S4</label>
+                                <input type="number" id="q4" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="question-input">
+                                <label for="q5">S5</label>
+                                <input type="number" id="q5" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="question-input" id="q6-container" style="display: none;">
+                                <label for="q6">S6</label>
+                                <input type="number" id="q6" min="0" max="100" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="exam-total">
+                            <label>Sınav Toplam:</label>
+                            <input type="number" id="exam1Total" readonly placeholder="Otomatik Hesaplanır">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Sisteme Kaydet</button>
+                </form>
+            </section>
+
+            <section class="table-section">
+                <h2>Son Girilen Kayıtlar</h2>
+                
+                <div class="filter-section">
+                    <div class="filter-inputs">
+                        <input type="text" id="searchName" placeholder="Öğrenci Ara (Ad veya Soyad)...">
+                        <select id="filterClass">
+                            <option value="all">Tüm Okul</option>
+                            <option value="5-all">Tüm 5. Sınıflar</option>
+                            <option value="6-all">Tüm 6. Sınıflar</option>
+                            <optgroup label="5. Sınıf Şubeleri">
+                                <option value="5-A">5/A</option>
+                                <option value="5-B">5/B</option>
+                                <option value="5-C">5/C</option>
+                                <option value="5-D">5/D</option>
+                                <option value="5-E">5/E</option>
+                            </optgroup>
+                            <optgroup label="6. Sınıf Şubeleri">
+                                <option value="6-A">6/A</option>
+                                <option value="6-B">6/B</option>
+                                <option value="6-C">6/C</option>
+                                <option value="6-D">6/D</option>
+                                <option value="6-E">6/E</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="export-actions">
+                        <button id="btnExportExcel" class="btn-export excel">Excel İndir</button>
+                        <button id="btnExportPDF" class="btn-export pdf">PDF İndir</button>
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive">
+                    <table id="gradesTable">
+                        <thead>
+                            <tr>
+                                <th>Öğrenci</th>
+                                <th>Sınıf</th>
+                                <th class="col-question">S1</th>
+                                <th class="col-question">S2</th>
+                                <th class="col-question">S3</th>
+                                <th class="col-question">S4</th>
+                                <th class="col-question">S5</th>
+                                <th class="col-question" id="th-s6" style="display: none;">S6</th>
+                                <th class="col-total">Puan</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
