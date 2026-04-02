@@ -40,21 +40,18 @@ for (let i = 1; i <= 6; i++) {
     if (input) questionInputs.push(input);
 }
 
-// ONDALIKLI HESAPLAMA GÜNCELLEMESİ
 function calculateTotal(): void {
     let totalScore = 0;
     const is6th = studentClassSelect.value.startsWith('6');
     const maxQuestions = is6th ? 6 : 5;
 
     for (let i = 0; i < maxQuestions; i++) {
-        // parseInt yerine parseFloat kullanıldı
         const value = parseFloat(questionInputs[i].value);
         if (!isNaN(value)) {
             totalScore += value;
         }
     }
     
-    // Virgülden sonraki gereksiz sıfırları atar, maksimum 2 hane bırakır (Örn: 8.5)
     examTotalInput.value = parseFloat(totalScore.toFixed(2)).toString();
 }
 
@@ -86,7 +83,6 @@ form.addEventListener('submit', async (e: Event) => {
 
     const is6th = studentClassSelect.value.startsWith('6');
 
-    // VERİ TABANINA ONDALIKLI KAYIT
     const recordToSave: any = {
         adSoyad: studentNameInput.value,
         sinif: studentClassSelect.value,
@@ -132,6 +128,8 @@ form.addEventListener('submit', async (e: Event) => {
 
 function addRecordToTable(record: any): void {
     const tr = document.createElement('tr');
+    
+    // Geri alınan renk class kodu buradaydı, silindi. Satırlar tekrar bembeyaz oldu.
     
     const isFilter5th = filterClassSelect.value.startsWith('5');
     const s6DisplayStyle = isFilter5th ? 'none' : 'block'; 
