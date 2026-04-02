@@ -63,7 +63,7 @@ function updateStatistics() {
     }
 }
 // =========================================================
-// KADEME BAZLI İSTATİSTİKLER 
+// KADEME BAZLI İSTATİSTİKLER
 // =========================================================
 function renderGradeLevelStats(gradeLevel) {
     const gradePrefix = gradeLevel.split('-')[0];
@@ -119,7 +119,7 @@ function renderGradeLevelStats(gradeLevel) {
     renderCharts(barConfig, pieConfig);
 }
 // =========================================================
-// SINIF BAZLI İSTATİSTİKLER VE YENİ 0 PUAN (SIFIR) ANALİZİ
+// SINIF BAZLI İSTATİSTİKLER VE PUAN ARALIĞI GRAFİĞİ
 // =========================================================
 function renderClassStats(className) {
     const filteredStudents = allStudents.filter(s => s.sinif === className);
@@ -140,7 +140,6 @@ function renderClassStats(className) {
     const lowestStudent = filteredStudents.find(s => s.toplam === minScore);
     const is6th = className.startsWith('6');
     const questionCount = is6th ? 6 : 5;
-    // --- YENİ MANTIK: HER SORU İÇİN 0 (SIFIR) ALAN ÖĞRENCİ SAYISINI BUL ---
     const zeroCounts = { s1: 0, s2: 0, s3: 0, s4: 0, s5: 0, s6: 0 };
     filteredStudents.forEach(s => {
         if (s.s1 === 0)
@@ -157,42 +156,54 @@ function renderClassStats(className) {
             zeroCounts.s6++;
     });
     let bestQ = "-";
-    let minZeros = 99999; // En az 0 alan soruyu bulmak için yüksek başlatıyoruz
+    let minZeros = 99999;
     let worstQ = "-";
-    let maxZeros = -1; // En çok 0 alan soruyu bulmak için düşük başlatıyoruz
+    let maxZeros = -1;
     for (let i = 1; i <= questionCount; i++) {
         const zeros = zeroCounts[`s${i}`];
-        // En Çok Yapılan = En az 0 alınan soru
         if (zeros < minZeros) {
             minZeros = zeros;
             bestQ = `Soru ${i}`;
         }
-        // En Az Yapılan = En çok 0 alınan soru
         if (zeros > maxZeros) {
             maxZeros = zeros;
             worstQ = `Soru ${i}`;
         }
     }
-    // Kartları Çiz
     createCard("Sınıf Ortalaması", `${avgScore.toFixed(1)}`, `Toplam ${filteredStudents.length} Öğrenci`);
     createCard("50 Puan Barajı", `${pass50} Geçti`, `${fail50} Öğrenci barajın altında kaldı`);
     createCard("Ortalama Barajı", `${aboveAvg} Üstünde`, `${belowAvg} Öğrenci ortalamanın altında`);
     createCard("100 Tam Puan", `${count100}`, `Öğrenci 100 tam puan aldı`);
     createCard("En Düşük Not", `${minScore}`, `Alan: ${lowestStudent?.adSoyad || 'Bilinmiyor'}`);
-    // YENİ KARTLAR (Sıfır Analizi)
     createCard("En Çok Yapılan", `${bestQ}`, `0 Alan: Sadece ${minZeros} Öğrenci`);
     createCard("En Az Yapılan", `${worstQ}`, `0 Alan: Tam ${maxZeros} Öğrenci`);
-    // --- FREKANS (YIĞILMA) GRAFİĞİ ---
-    barChartTitle.textContent = "Sınıf Puan Yığılma Eğrisi";
+    // --- YENİLİK BURADA: PUAN ARALIKLARINA GÖRE YIĞILMA GRAFİĞİ ---
+    barChartTitle.textContent = "Sınıf Puan Yığılma Eğrisi (Aralıklı)";
     pieChartTitle.textContent = "Sınıf İçi 50 Puan Barajı";
-    const scoreFrequency = {};
+    // Puan aralıklarını tanımla ve sayaçları sıfırla
+    const rangeCounts = {
+        "0-19 Puan": 0,
+        "20-39 Puan": 0,
+        "40-59 Puan": 0,
+        "60-79 Puan": 0,
+        "80-100 Puan": 0
+    };
+    // Öğrencilerin puanlarını aralıklara dağıt
     filteredStudents.forEach(s => {
         const score = s.toplam;
-        scoreFrequency[score] = (scoreFrequency[score] || 0) + 1;
+        if (score < 20)
+            rangeCounts["0-19 Puan"]++;
+        else if (score < 40)
+            rangeCounts["20-39 Puan"]++;
+        else if (score < 60)
+            rangeCounts["40-59 Puan"]++;
+        else if (score < 80)
+            rangeCounts["60-79 Puan"]++;
+        else
+            rangeCounts["80-100 Puan"]++;
     });
-    const sortedUniqueScores = Object.keys(scoreFrequency).map(Number).sort((a, b) => a - b);
-    const frequencies = sortedUniqueScores.map(score => scoreFrequency[score]);
-    const scoreLabels = sortedUniqueScores.map(score => score + " Puan");
+    const scoreLabels = Object.keys(rangeCounts);
+    const frequencies = Object.values(rangeCounts);
     const lineConfig = {
         type: 'line',
         data: {
@@ -204,19 +215,30 @@ function renderClassStats(className) {
                     backgroundColor: 'rgba(139, 92, 246, 0.2)',
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.4,
+                    tension: 0.4, // Eğrinin yumuşak olmasını sağlar
                     pointBackgroundColor: '#f59e0b',
                     pointBorderColor: '#ffffff',
-                    pointRadius: 5,
-                    pointHoverRadius: 7
+                    pointRadius: 6,
+                    pointHoverRadius: 8
                 }]
         },
         options: {
             responsive: true,
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 } // Kişi sayısı buçuklu olamayacağı için
+                }
+            },
             plugins: {
                 legend: { display: false },
-                tooltip: { callbacks: { label: function (context) { return context.raw + ' Öğrenci bu puanı aldı'; } } }
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.raw + ' Öğrenci bu aralıkta not aldı';
+                        }
+                    }
+                }
             }
         }
     };

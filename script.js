@@ -31,17 +31,20 @@ for (let i = 1; i <= 6; i++) {
     if (input)
         questionInputs.push(input);
 }
+// ONDALIKLI HESAPLAMA GÜNCELLEMESİ
 function calculateTotal() {
     let totalScore = 0;
     const is6th = studentClassSelect.value.startsWith('6');
     const maxQuestions = is6th ? 6 : 5;
     for (let i = 0; i < maxQuestions; i++) {
-        const value = parseInt(questionInputs[i].value);
+        // parseInt yerine parseFloat kullanıldı
+        const value = parseFloat(questionInputs[i].value);
         if (!isNaN(value)) {
             totalScore += value;
         }
     }
-    examTotalInput.value = totalScore.toString();
+    // Virgülden sonraki gereksiz sıfırları atar, maksimum 2 hane bırakır (Örn: 8.5)
+    examTotalInput.value = parseFloat(totalScore.toFixed(2)).toString();
 }
 questionInputs.forEach(input => {
     input.addEventListener('input', calculateTotal);
@@ -61,24 +64,24 @@ studentClassSelect.addEventListener('change', () => {
     }
     calculateTotal();
 });
-// FORMU GÖNDERME (Kaydet / Güncelle)
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.textContent = currentEditId ? "Güncelleniyor..." : "Buluta Kaydediliyor...";
     submitBtn.disabled = true;
     const is6th = studentClassSelect.value.startsWith('6');
+    // VERİ TABANINA ONDALIKLI KAYIT
     const recordToSave = {
         adSoyad: studentNameInput.value,
         sinif: studentClassSelect.value,
-        s1: parseInt(questionInputs[0].value) || 0,
-        s2: parseInt(questionInputs[1].value) || 0,
-        s3: parseInt(questionInputs[2].value) || 0,
-        s4: parseInt(questionInputs[3].value) || 0,
-        s5: parseInt(questionInputs[4].value) || 0,
-        toplam: parseInt(examTotalInput.value) || 0
+        s1: parseFloat(questionInputs[0].value) || 0,
+        s2: parseFloat(questionInputs[1].value) || 0,
+        s3: parseFloat(questionInputs[2].value) || 0,
+        s4: parseFloat(questionInputs[3].value) || 0,
+        s5: parseFloat(questionInputs[4].value) || 0,
+        toplam: parseFloat(examTotalInput.value) || 0
     };
     if (is6th) {
-        recordToSave.s6 = parseInt(questionInputs[5].value) || 0;
+        recordToSave.s6 = parseFloat(questionInputs[5].value) || 0;
     }
     try {
         if (currentEditId) {
@@ -95,20 +98,16 @@ form.addEventListener('submit', async (e) => {
         examTotalInput.value = '';
         studentClassSelect.dispatchEvent(new Event('change'));
         await loadGradesFromCloud();
-        // ---> EKSİK OLAN VE EKLENEN KISIM BURASI <---
-        // İşlem başarıyla bitince butonu eski haline getir ve kilidini aç
         submitBtn.textContent = "Sisteme Kaydet";
         submitBtn.disabled = false;
     }
     catch (error) {
         console.error("Firestore Hatası: ", error);
         alert("Bir hata oluştu. Lütfen bağlantınızı kontrol edin.");
-        // Hata durumunda da kilidi aç ki kullanıcı tekrar deneyebilsin
         submitBtn.disabled = false;
         submitBtn.textContent = currentEditId ? "Kaydı Güncelle" : "Sisteme Kaydet";
     }
 });
-// --- YENİLİK BURADA: MOBİL UYUMLU KISALTILMIŞ ETİKETLER ---
 function addRecordToTable(record) {
     const tr = document.createElement('tr');
     const isFilter5th = filterClassSelect.value.startsWith('5');
@@ -118,7 +117,6 @@ function addRecordToTable(record) {
     }
     const isRecord6th = record.sinif && record.sinif.startsWith('6');
     const s6Value = (isRecord6th && record.s6 !== undefined) ? record.s6 : '-';
-    // Soru yazıları S1, S2 olarak kısaltıldı ki mobildeki küçük kutucuklara sığsın
     tr.innerHTML = `
         <td data-label="Öğrenci">${record.adSoyad}</td>
         <td data-label="Sınıf">${record.sinif}</td>
