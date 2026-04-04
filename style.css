@@ -20,110 +20,80 @@ body {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    overflow: hidden;
+    /* DİKKAT: overflow: hidden; BURADAN KALDIRILDI Kİ KESİLME OLMASIN */
 }
 
-/* Numara girişlerindeki okları (spinners) gizle - DAHA KOLAY KULLANIM */
+/* Sayı girişlerindeki okları gizle */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 input[type="number"] {
-    -moz-appearance: textfield; /* Firefox için */
+    -moz-appearance: textfield; 
 }
 
 /* ==============================================================
    2. ÜST BİLGİ VE ORTAK BUTONLAR (HEADER)
    ============================================================== */
-header {
-    background-color: #1e293b;
+.app-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2563eb 100%);
     color: #ffffff;
-    padding: 20px 30px;
-    text-align: center;
+    padding: 25px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid #f59e0b;
+    border-radius: 10px 10px 0 0;
 }
 
-header p {
-    font-size: 0.9rem;
-    color: #94a3b8;
-    margin-top: 5px;
-}
+.header-text h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.header-text p { font-size: 0.95rem; color: #cbd5e1; font-weight: 500; }
 
 .btn-nav {
-    display: inline-block;
-    background-color: #f59e0b;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
+    display: inline-flex; align-items: center;
+    background-color: rgba(255, 255, 255, 0.15); color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.95rem; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-
-.btn-nav:hover { background-color: #d97706; }
+.btn-nav:hover { background-color: rgba(255, 255, 255, 0.25); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
 
 /* ==============================================================
    3. ANA SAYFA DÜZENİ VE FORM ALANI
    ============================================================== */
-main {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 30px;
-    padding: 30px;
+/* DİKKAT: minmax(0, 2fr) ve align-items: start eklendi, tablo formu patlatamaz */
+main { 
+    display: grid; 
+    grid-template-columns: minmax(300px, 1fr) minmax(0, 2fr); 
+    gap: 30px; 
+    padding: 30px; 
+    align-items: start; 
 }
 
-.form-section {
-    background-color: #f8fafc;
-    padding: 25px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-}
+.form-section { background-color: #f8fafc; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; width: 100%; }
 
 h2 { font-size: 1.25rem; color: #0f172a; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
 .form-group { margin-bottom: 15px; }
-
 label { display: block; font-size: 0.9rem; font-weight: 600; color: #475569; margin-bottom: 5px; }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: all 0.3s;
-}
-
+input:not([type="number"]), select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 1rem; transition: border-color 0.3s; }
 input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 
-.btn-submit { width: 100%; background-color: #3b82f6; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: background-color 0.3s; }
-.btn-submit:hover { background-color: #2563eb; }
+/* ŞIKLAŞTIRILMIŞ KAYDET DÜĞMESİ */
+.btn-submit { 
+    width: 100%; 
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white; padding: 12px; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer; margin-top: 10px; 
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4); }
 
-/* --- YENİLENEN VE BASİTLEŞEN SORU GİRİŞ KUTULARI --- */
 .exam-details-box { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
 .section-label { display: block; font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 15px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; }
 
 .questions-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
 .question-input label { font-size: 0.85rem; text-align: center; color: #64748b; font-weight: bold; margin-bottom: 3px; }
-
-.question-input input { 
-    padding: 12px 5px; 
-    text-align: center; 
-    font-size: 1.25rem; /* Rakamlar büyüdü */
-    font-weight: 800; 
-    color: #0f172a;
-    border: 2px solid #cbd5e1; /* Daha belirgin çerçeve */
-    border-radius: 8px;
-    background-color: #f8fafc;
-}
-
-.question-input input:focus {
-    border-color: #3b82f6;
-    background-color: #eff6ff; /* Seçili kutu mavi olur */
-    color: #2563eb; /* Rakam da maviye döner */
-    transform: scale(1.05); /* Seçili kutu çok hafif büyür (Hissiyat) */
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15);
-}
+.question-input input { width: 100%; padding: 12px 5px; text-align: center; font-size: 1.25rem; font-weight: 800; color: #0f172a; border: 2px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; transition: all 0.2s;}
+.question-input input:focus { border-color: #3b82f6; background-color: #eff6ff; color: #2563eb; transform: scale(1.05); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15); }
 
 .exam-total { display: flex; align-items: center; justify-content: flex-end; gap: 10px; background-color: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; }
 .exam-total label { margin: 0; font-weight: 700; color: #334155; font-size: 1.1rem; }
@@ -132,17 +102,22 @@ input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 
 /* ==============================================================
    4. ANA SAYFA TABLO VE DIŞA AKTARMA
    ============================================================== */
-.table-section { padding: 10px; }
-.filter-section { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+/* DİKKAT: overflow-x: auto ile tablo genişlerse scroll çıkar, sayfayı bozmaz */
+.table-section { padding: 10px; width: 100%; overflow-x: auto; }
+
+.filter-section { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; min-width: 650px; }
 .filter-inputs { display: flex; gap: 10px; flex: 1; }
 .export-actions { display: flex; gap: 10px; }
 
-.btn-export { padding: 10px 15px; border: none; border-radius: 5px; color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: opacity 0.2s; white-space: nowrap; }
-.btn-export:hover { opacity: 0.85; }
-.btn-export.excel { background-color: #16a34a; }
-.btn-export.pdf { background-color: #dc2626; }
+/* ŞIKLAŞTIRILMIŞ EXCEL VE PDF DÜĞMELERİ */
+.btn-export { 
+    padding: 10px 18px; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease; white-space: nowrap; 
+}
+.btn-export.excel { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3); }
+.btn-export.pdf { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3); }
+.btn-export:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
 
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 650px; }
 th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
 th { background-color: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
 td { color: #334155; font-size: 0.95rem; }
@@ -150,10 +125,11 @@ td { color: #334155; font-size: 0.95rem; }
 .col-question { text-align: center; color: #2563eb; font-weight: 700; width: 50px; }
 .col-total { background-color: #f8fafc; text-align: center; font-size: 1.1rem; color: #16a34a; font-weight: 800; }
 
-.btn-edit { background-color: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background-color 0.2s; }
-.btn-edit:hover { background-color: #d97706; }
-.btn-delete { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-left: 5px; transition: background-color 0.2s; }
-.btn-delete:hover { background-color: #b91c1c; }
+/* ŞIKLAŞTIRILMIŞ DÜZENLE VE SİL DÜĞMELERİ */
+.btn-edit { background-color: #f59e0b; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
+.btn-edit:hover { background-color: #d97706; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); }
+.btn-delete { background-color: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-left: 5px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+.btn-delete:hover { background-color: #b91c1c; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3); }
 
 /* ==============================================================
    5. İSTATİSTİK SAYFASI DÜZENİ
@@ -175,21 +151,24 @@ td { color: #334155; font-size: 0.95rem; }
 .chart-container { background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
 .chart-container h3 { text-align: center; color: #1e293b; margin-bottom: 15px; font-size: 1.1rem; border-bottom: none; }
 
-
 /* ==============================================================
    6. RESPONSIVE TASARIM VE MOBİL UYUM
    ============================================================== */
 @media (max-width: 992px) {
     main { display: flex !important; flex-direction: column !important; padding: 15px !important; gap: 15px; }
-    .filter-section { flex-direction: column; align-items: stretch; }
+    .filter-section { flex-direction: column; align-items: stretch; min-width: auto; }
+    table { min-width: auto; }
     .export-actions { justify-content: flex-end; }
     .charts-grid { display: none !important; }
 }
 
 @media (max-width: 600px) {
     body { padding: 5px; }
-    header { padding: 15px; }
-    header h1 { font-size: 1.3rem; }
+    
+    .app-header { flex-direction: column; text-align: center; padding: 20px; gap: 15px; border-radius: 10px; margin-bottom: 10px; }
+    .header-text h1 { font-size: 1.5rem; }
+    .btn-nav { width: 100%; justify-content: center; }
+    
     .filter-inputs { flex-direction: column; }
     .questions-grid { grid-template-columns: repeat(3, 1fr) !important; }
     
@@ -202,34 +181,19 @@ td { color: #334155; font-size: 0.95rem; }
     thead { display: none; }
 
     tr {
-        margin-bottom: 15px;
-        background: #ffffff; /* Sınıf renklerini kaldırdık, beyaz arka plan geri geldi */
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        display: flex;
-        flex-wrap: wrap; 
-        align-items: center;
-        gap: 5px; 
+        margin-bottom: 15px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; align-items: center; gap: 5px; 
     }
-
     td:nth-child(1) { flex: 1 1 70%; font-size: 1.15rem; font-weight: bold; color: #0f172a; padding: 0 0 5px 0; border: none; }
     td:nth-child(2) { flex: 1 1 20%; text-align: right; font-size: 1.05rem; font-weight: bold; color: #64748b; padding: 0 0 5px 0; border: none; }
 
     .col-question {
-        flex: 1 1 14%; min-width: 35px;
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px; padding: 5px 2px; text-align: center; display: flex !important; flex-direction: column; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: 700; color: #2563eb; 
+        flex: 1 1 14%; min-width: 35px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 2px; text-align: center; display: flex !important; flex-direction: column; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: 700; color: #2563eb; 
     }
     .col-question::before { content: attr(data-label); font-size: 0.65rem; color: #94a3b8; font-weight: normal; margin-bottom: 2px; }
     td.cell-s6[style*="display: none"] { display: none !important; }
 
     .col-total {
-        flex: 1 1 100%; display: flex; justify-content: space-between; align-items: center;
-        background-color: #f1f5f9;
-        border-radius: 5px; padding: 8px 10px; margin-top: 5px; border: none; font-size: 1.25rem; font-weight: 800; color: #16a34a; 
+        flex: 1 1 100%; display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; border-radius: 5px; padding: 8px 10px; margin-top: 5px; border: none; font-size: 1.25rem; font-weight: 800; color: #16a34a; 
     }
     .col-total::before { content: "Toplam Puan:"; font-size: 0.9rem; font-weight: 600; color: #475569; }
 
