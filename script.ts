@@ -31,6 +31,7 @@ const searchNameInput = document.getElementById('searchName') as HTMLInputElemen
 const filterClassSelect = document.getElementById('filterClass') as HTMLSelectElement;
 const btnExportExcel = document.getElementById('btnExportExcel') as HTMLButtonElement;
 const btnExportPDF = document.getElementById('btnExportPDF') as HTMLButtonElement;
+const btnExportJSON = document.getElementById('btnExportJSON') as HTMLButtonElement;
 
 let currentEditId: string | null = null;
 
@@ -365,6 +366,62 @@ btnExportPDF.addEventListener('click', async () => {
     } finally {
         btnExportPDF.textContent = originalText;
         btnExportPDF.disabled = false;
+    }
+});
+
+// JSON OLARAK TÜM VERİTABANINI İNDİRME İŞLEMİ
+btnExportJSON.addEventListener('click', async () => {
+    const originalText = btnExportJSON.textContent;
+    btnExportJSON.textContent = "Veriler Çekiliyor...";
+    btnExportJSON.disabled = true;
+
+    try {
+        // Tüm veritabanını filtrelemeden çek
+        const q = query(collection(db, "ogrenci_notlari"));
+        const querySnapshot = await getDocs(q);
+        
+        const allData: any[] = [];
+        querySnapshot.forEach((docSnap: any) => {
+            const data = docSnap.data();
+            // Firebase'in atadığı benzersiz ID'yi de yedeğe dahil et
+            data.id = docSnap.id; 
+            allData.push(data);
+        });
+
+        if (allData.length === 0) {
+            alert("İndirilecek veri bulunamadı.");
+            return;
+        }
+
+        // Veriyi güzel, okunabilir (indentation = 2) JSON formatına çevir
+        const jsonString = JSON.stringify(allData, null, 2);
+        
+        // İndirme işlemi için Blob (Dosya parçacığı) oluştur
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        // Geçici bir indirme linki oluşturup otomatik tıklat
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Dosya adına bugünün tarihini ekle (Örn: veritabani_yedek_2026-04-05.json)
+        const date = new Date();
+        const dateString = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        a.download = `veritabani_yedek_${dateString}.json`;
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // Hafıza temizliği
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error("JSON oluşturulurken hata:", error);
+        alert("Veriler indirilirken bir hata oluştu.");
+    } finally {
+        btnExportJSON.textContent = originalText;
+        btnExportJSON.disabled = false;
     }
 });
 

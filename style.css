@@ -201,3 +201,23 @@ td { color: #334155; font-size: 0.95rem; }
     td:last-child::before { display: none; } 
     .btn-edit, .btn-delete { flex: 1; padding: 10px; font-size: 0.9rem; margin: 0; }
 }
+/* --- YENİ JSON YEDEKLEME DÜĞMESİ --- */
+.btn-json {
+    width: 100%;
+    background: linear-gradient(135deg, #64748b 0%, #334155 100%); /* Şık bir antrasit/gri gradyan */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(71, 85, 105, 0.3);
+}
+.btn-json:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(71, 85, 105, 0.4);
+    background: linear-gradient(135deg, #475569 0%, #1e293b 100%);
+}

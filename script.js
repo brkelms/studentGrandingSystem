@@ -24,6 +24,7 @@ const searchNameInput = document.getElementById('searchName');
 const filterClassSelect = document.getElementById('filterClass');
 const btnExportExcel = document.getElementById('btnExportExcel');
 const btnExportPDF = document.getElementById('btnExportPDF');
+const btnExportJSON = document.getElementById('btnExportJSON');
 let currentEditId = null;
 const questionInputs = [];
 for (let i = 1; i <= 6; i++) {
@@ -31,19 +32,16 @@ for (let i = 1; i <= 6; i++) {
     if (input)
         questionInputs.push(input);
 }
-// ONDALIKLI HESAPLAMA GÜNCELLEMESİ
 function calculateTotal() {
     let totalScore = 0;
     const is6th = studentClassSelect.value.startsWith('6');
     const maxQuestions = is6th ? 6 : 5;
     for (let i = 0; i < maxQuestions; i++) {
-        // parseInt yerine parseFloat kullanıldı
         const value = parseFloat(questionInputs[i].value);
         if (!isNaN(value)) {
             totalScore += value;
         }
     }
-    // Virgülden sonraki gereksiz sıfırları atar, maksimum 2 hane bırakır (Örn: 8.5)
     examTotalInput.value = parseFloat(totalScore.toFixed(2)).toString();
 }
 questionInputs.forEach(input => {
@@ -69,7 +67,6 @@ form.addEventListener('submit', async (e) => {
     submitBtn.textContent = currentEditId ? "Güncelleniyor..." : "Buluta Kaydediliyor...";
     submitBtn.disabled = true;
     const is6th = studentClassSelect.value.startsWith('6');
-    // VERİ TABANINA ONDALIKLI KAYIT
     const recordToSave = {
         adSoyad: studentNameInput.value,
         sinif: studentClassSelect.value,
@@ -110,6 +107,7 @@ form.addEventListener('submit', async (e) => {
 });
 function addRecordToTable(record) {
     const tr = document.createElement('tr');
+    // Geri alınan renk class kodu buradaydı, silindi. Satırlar tekrar bembeyaz oldu.
     const isFilter5th = filterClassSelect.value.startsWith('5');
     const s6DisplayStyle = isFilter5th ? 'none' : 'block';
     if (window.innerWidth > 600) {
@@ -312,6 +310,53 @@ btnExportPDF.addEventListener('click', async () => {
     finally {
         btnExportPDF.textContent = originalText;
         btnExportPDF.disabled = false;
+    }
+});
+// JSON OLARAK TÜM VERİTABANINI İNDİRME İŞLEMİ
+btnExportJSON.addEventListener('click', async () => {
+    const originalText = btnExportJSON.textContent;
+    btnExportJSON.textContent = "Veriler Çekiliyor...";
+    btnExportJSON.disabled = true;
+    try {
+        // Tüm veritabanını filtrelemeden çek
+        const q = query(collection(db, "ogrenci_notlari"));
+        const querySnapshot = await getDocs(q);
+        const allData = [];
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            // Firebase'in atadığı benzersiz ID'yi de yedeğe dahil et
+            data.id = docSnap.id;
+            allData.push(data);
+        });
+        if (allData.length === 0) {
+            alert("İndirilecek veri bulunamadı.");
+            return;
+        }
+        // Veriyi güzel, okunabilir (indentation = 2) JSON formatına çevir
+        const jsonString = JSON.stringify(allData, null, 2);
+        // İndirme işlemi için Blob (Dosya parçacığı) oluştur
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        // Geçici bir indirme linki oluşturup otomatik tıklat
+        const a = document.createElement('a');
+        a.href = url;
+        // Dosya adına bugünün tarihini ekle (Örn: veritabani_yedek_2026-04-05.json)
+        const date = new Date();
+        const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        a.download = `veritabani_yedek_${dateString}.json`;
+        document.body.appendChild(a);
+        a.click();
+        // Hafıza temizliği
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    catch (error) {
+        console.error("JSON oluşturulurken hata:", error);
+        alert("Veriler indirilirken bir hata oluştu.");
+    }
+    finally {
+        btnExportJSON.textContent = originalText;
+        btnExportJSON.disabled = false;
     }
 });
 loadGradesFromCloud();
